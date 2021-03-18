@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
+import Button from '@material-ui/core/Button';
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import firebaseConfig from './firebase.config'
 import { userContext } from '../../App';
 import { useHistory, useLocation } from 'react-router';
+import './Login.css';
 
 const Login = () => {
     const [loggedInUser, setLoggedInUser] = useContext(userContext);
@@ -16,14 +18,14 @@ const Login = () => {
         firebase.initializeApp(firebaseConfig);
     }
 
-    const handleGoogleSignIn = () => {
-        var provider = new firebase.auth.GoogleAuthProvider();
+    var provider = new firebase.auth.GoogleAuthProvider();
+    var fbProvider = new firebase.auth.FacebookAuthProvider();
 
+    const handleGoogleSignIn = () => {
         firebase.auth()
             .signInWithPopup(provider)
             .then((result) => {
                 var credential = result.credential;
-
                 var token = credential.accessToken;
                 const { displayName, email } = result.user;
                 const signedInUser = { name: displayName, email }
@@ -33,14 +35,34 @@ const Login = () => {
             }).catch((error) => {
                 const errorMessage = error.message;
                 console.log(errorMessage);
-                
+            });
+    }
+
+    const handleFacebookSignIn = () => {
+        firebase
+            .auth()
+            .signInWithPopup(fbProvider)
+            .then((result) => {
+                var credential = result.credential;
+                const { displayName, email } = result.user;
+                const signedInUser = { name: displayName, email }
+                setLoggedInUser(signedInUser);
+                history.replace(from);
+                var accessToken = credential.accessToken;
+            })
+            .catch((error) => {
+                var errorMessage = error.message;
+                console.log(errorMessage);
             });
     }
     return (
-        <div>
-            <h1>This is Login</h1>
-            <button onClick={handleGoogleSignIn}>Sign In With Google</button>
-        </div>
+        <>
+            <div className="login-box">
+                <Button onClick={handleGoogleSignIn} variant="contained" color="primary">SignIn Google</Button>
+                <br /> <br />
+                <Button onClick={handleFacebookSignIn} variant="contained" color="primary">SignIn Facebook</Button>
+            </div>
+        </>
     );
 };
 
